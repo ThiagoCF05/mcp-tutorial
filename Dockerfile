@@ -14,4 +14,4 @@ COPY . .
 EXPOSE 8080
 
 # Set default command to run the server
-CMD ["fastmcp", "run", "server.py", "--transport", "streamable-http", "--port", "8080"]
+CMD ["fastmcp", "run", "server.py", "--transport", "streamable-http", "--port", "8080", "--host", "0.0.0.0"]
