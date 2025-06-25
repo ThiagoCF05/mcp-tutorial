@@ -25,27 +25,7 @@ CREATE TABLE fundamental_analysis (
 	UltimoBalancoProcessado DATETIME NOT NULL, # Último Balanço patrimonial Processado
 	ValorFirma FLOAT NOT NULL, # Valor da Firma
 	NumeroAcoes INTEGER NOT NULL, # Número Total de Ações
-	P_L FLOAT NOT NULL, # Indicador Fundamentalist Preço / Lucro
-	LPA FLOAT NOT NULL, # Indicador Fundamentalist "Lucro por Ação"
-	P_VP FLOAT NOT NULL, # Indicador Fundamentalist Preço / Valor Patrimonial
-	VPA FLOAT NOT NULL, # Indicador Fundamentalist "Valor por ação"
-	P_EBIT FLOAT NOT NULL, # Indicador Fundamentalist Preço / EBIT
-	MargemBruta FLOAT NOT NULL, # Margem Bruta
-	PSR FLOAT NOT NULL, # # Indicador Fundamentalist PSR
-	MargemEBIT FLOAT NOT NULL, # Margem EBIT
-	P_Ativos FLOAT NOT NULL, # Indicador Fundamentalist Preço / Ativos
-	MargemLiquida FLOAT NOT NULL, # Margem Líquida
-	P_CapGiro FLOAT NOT NULL, # # Indicador Fundamentalist Preço / Capital de Giro
-	EBIT_Ativo FLOAT NOT NULL, # # Indicador Fundamentalist EBIT / Ativo
-	P_AtivCircLiq FLOAT NOT NULL, # Indicador Fundamentalist Preço / Ativo Circulante Líquido
-	ROIC FLOAT NOT NULL, # Indicador Fundamentalist ROIC
-	ROE FLOAT NOT NULL, # Indicador Fundamentalist ROE
-	EV_EBITDA FLOAT NOT NULL, # Indicador Fundamentalist EV / EBITDA
-	LiquidezCorrente FLOAT NOT NULL, # Liquidez Corrente
-	EV_EBIT FLOAT NOT NULL, # Indicador Fundamentalist EV / EBIT
-	DividaBruta_PatrimonioLiquido FLOAT NOT NULL, # Indicador Fundamentalist Dívida Bruta / Patrimônio Líquido
 	CrescimentoReceita5a FLOAT NOT NULL, # Crescimento da Receita nos últimos 5 anos
-	GiroAtivos FLOAT NOT NULL, # Giro de Ativos
 	Ativo FLOAT NOT NULL, # Ativo dos últimos 12 meses
 	DividaBruta FLOAT NOT NULL, # Dívida Bruta dos últimos 12 meses
 	Disponibilidades FLOAT NOT NULL, # Disponibilidades dos últimos 12 meses
