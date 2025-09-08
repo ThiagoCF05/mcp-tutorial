@@ -1,7 +1,38 @@
 # server.py
+import os
+from dotenv import load_dotenv
 from fastmcp import FastMCP
+from fastmcp.server.auth.providers.jwt import JWTVerifier
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.backends import default_backend
 
-mcp = FastMCP("Demo 🚀")
+load_dotenv()
+
+PUBLIC_KEY = os.getenv("PUBLIC_KEY")
+ALGORITHM = os.getenv("ALGORITHM")
+
+with open(PUBLIC_KEY, "rb") as key_file:
+    public_key = serialization.load_pem_public_key(
+        key_file.read(),
+    )
+
+public_key_str = public_key.public_bytes(
+    encoding=serialization.Encoding.PEM,
+    format=serialization.PublicFormat.SubjectPublicKeyInfo
+)
+
+verifier = JWTVerifier(
+    public_key=public_key_str,
+    issuer="bovespa-mcp",
+    audience="mcp-internal-api",
+    algorithm=ALGORITHM
+)
+
+mcp = FastMCP(
+    name="Fundamental Analysis SQL Database", 
+    auth=verifier
+)
+from fastmcp import FastMCP
 
 DATABASE_PATH = "fundamental_analysis.db"
 
