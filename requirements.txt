@@ -1,1 +1,4 @@
-fastmcp==2.8.1
+fastmcp==2.12.2
+fastapi==0.116.1
+dotenv==0.9.9
+PyJWT==2.10.1
