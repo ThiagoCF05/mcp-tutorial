@@ -23,14 +23,14 @@ with open(PRIVATE_KEY, "rb") as key_file:
 async def create_access_token(username: str, password: str):
     # In a real application, validate username and password against a database
     if username == os.getenv("USERNAME") and password == os.getenv("PASSWORD"):
-        expiration_date = datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
+        expiration_date = datetime.datetime.utcnow() + datetime.timedelta(hours=30)
         scope = ["read:data"]
         to_encode = {
             "sub": username,
             "exp": expiration_date,
             "scope": scope,
-            "iss": "bovespa-mcp",
-            "aud": "mcp-internal-api",
+            "iss": os.getenv("JWT_ISSUER"),
+            "aud": os.getenv("JWT_AUDIENCE"),
         }
         encoded_jwt = jwt.encode(to_encode, private_key, algorithm=ALGORITHM)
         return {

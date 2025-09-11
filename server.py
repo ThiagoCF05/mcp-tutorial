@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 from fastmcp import FastMCP
 from fastmcp.server.auth.providers.jwt import JWTVerifier
 from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.backends import default_backend
 
 load_dotenv()
 
@@ -23,8 +22,8 @@ public_key_str = public_key.public_bytes(
 
 verifier = JWTVerifier(
     public_key=public_key_str,
-    issuer="bovespa-mcp",
-    audience="mcp-internal-api",
+    issuer=os.getenv("JWT_ISSUER"),
+    audience=os.getenv("JWT_AUDIENCE"),
     algorithm=ALGORITHM
 )
 
@@ -34,7 +33,7 @@ mcp = FastMCP(
 )
 from fastmcp import FastMCP
 
-DATABASE_PATH = "fundamental_analysis.db"
+DATABASE_PATH = os.getenv("DATABASE_PATH")
 
 @mcp.tool
 def query_fundamental_analysis(sql_query: str) -> str:
