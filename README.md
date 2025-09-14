@@ -6,9 +6,11 @@ To generate R256 keys, run:
 
 ```bash
 sh generate_key.pem
+mv mcp-tutorial.pem jwt-server/
+mv mcp-tutorial.pub.pem mcp-server/
 ```
 
-It will generate the public (`mcp-tutorial.pub.pem`) and private (`mcp-tutorial.pem`) keys. Keep them in the root of the repo.
+It will generate the public (`mcp-tutorial.pub.pem`) and private (`mcp-tutorial.pem`) keys.
 
 ## JWT Server
 

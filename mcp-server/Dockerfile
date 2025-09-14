@@ -15,11 +15,11 @@ COPY src/ .
 COPY .env .
 
 # Copy the PEM key file to the working directory Set the environment variable it
-COPY ../mcp-tutorial.pub.pem /app/
+COPY mcp-tutorial.pub.pem /app/
 ENV PUBLIC_KEY=/app/mcp-tutorial.pub.pem
 
 # Copy the database path to the working directory Set the environment variable it
-COPY ../fundamental_analysis/2025-08-31/fundamental_analysis.db /app/
+COPY fundamental_analysis.db /app/
 ENV DATABASE_PATH=/app/fundamental_analysis.db
 
 # Expose the port that the app will be running on
