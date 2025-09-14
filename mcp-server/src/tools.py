@@ -1,41 +1,3 @@
-# server.py
-import os
-from dotenv import load_dotenv
-from fastmcp import FastMCP
-from fastmcp.server.auth.providers.jwt import JWTVerifier
-from cryptography.hazmat.primitives import serialization
-
-load_dotenv()
-
-PUBLIC_KEY = os.getenv("PUBLIC_KEY")
-ALGORITHM = os.getenv("ALGORITHM")
-
-with open(PUBLIC_KEY, "rb") as key_file:
-    public_key = serialization.load_pem_public_key(
-        key_file.read(),
-    )
-
-public_key_str = public_key.public_bytes(
-    encoding=serialization.Encoding.PEM,
-    format=serialization.PublicFormat.SubjectPublicKeyInfo
-)
-
-verifier = JWTVerifier(
-    public_key=public_key_str,
-    issuer=os.getenv("JWT_ISSUER"),
-    audience=os.getenv("JWT_AUDIENCE"),
-    algorithm=ALGORITHM
-)
-
-mcp = FastMCP(
-    name="Fundamental Analysis SQL Database", 
-    auth=verifier
-)
-from fastmcp import FastMCP
-
-DATABASE_PATH = os.getenv("DATABASE_PATH")
-
-@mcp.tool
 def query_fundamental_analysis(sql_query: str) -> str:
     """Query a SQL Database about Fundamental Analysis of the Brazilian Stock market with the following schema:
     
@@ -78,6 +40,7 @@ CREATE TABLE fundamental_analysis (
 )
 """
     import sqlite3
+    from config import DATABASE_PATH
     try:
         with sqlite3.connect(DATABASE_PATH) as conn:
             cursor = conn.cursor()
@@ -102,6 +65,3 @@ CREATE TABLE fundamental_analysis (
             return output
     except Exception as e:
         return f"Failed to get table schema: {e}"
-
-if __name__ == "__main__":
-    mcp.run(transport="streamable-http", port=8080, path="/mcp", host="0.0.0.0")

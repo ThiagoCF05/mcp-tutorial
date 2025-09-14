@@ -1,16 +1,16 @@
 from dotenv import load_dotenv
+
+load_dotenv()
+
 from fastapi import FastAPI, HTTPException
 import jwt
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.backends import default_backend
 import os
 import datetime
-
-load_dotenv()
+from src.config import PRIVATE_KEY, JWT_ALGORITHM, JWT_ISSUER, JWT_AUDIENCE
 
 app = FastAPI(title="JWT Server", version="1.0.0")
-PRIVATE_KEY = os.getenv("PRIVATE_KEY")
-ALGORITHM = os.getenv("ALGORITHM")
 
 with open(PRIVATE_KEY, "rb") as key_file:
     private_key = serialization.load_pem_private_key(
@@ -29,10 +29,10 @@ async def create_access_token(username: str, password: str):
             "sub": username,
             "exp": expiration_date,
             "scope": scope,
-            "iss": os.getenv("JWT_ISSUER"),
-            "aud": os.getenv("JWT_AUDIENCE"),
+            "iss": JWT_ISSUER,
+            "aud": JWT_AUDIENCE,
         }
-        encoded_jwt = jwt.encode(to_encode, private_key, algorithm=ALGORITHM)
+        encoded_jwt = jwt.encode(to_encode, private_key, algorithm=JWT_ALGORITHM)
         return {
             "access_token": encoded_jwt, 
             "token_type": "bearer"
