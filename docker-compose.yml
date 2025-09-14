@@ -1,0 +1,18 @@
+version: '3'
+services:
+  jwt-server:
+    build: ./jwt-server
+    ports:
+      - 8000:8000
+  mcp-server:
+    build: ./mcp-server
+    depends_on:
+      - jwt-server
+    ports:
+      - 8080:8080
+  google-adk-agent:
+    build: ./google-adk-agent
+    depends_on:
+      - mcp-server
+    ports:
+      - 7000:7000

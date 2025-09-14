@@ -8,7 +8,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.backends import default_backend
 import os
 import datetime
-from src.config import PRIVATE_KEY, JWT_ALGORITHM, JWT_ISSUER, JWT_AUDIENCE
+from config import PRIVATE_KEY, JWT_ALGORITHM, JWT_ISSUER, JWT_AUDIENCE
 
 app = FastAPI(title="JWT Server", version="1.0.0")
 
