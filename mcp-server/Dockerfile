@@ -26,4 +26,4 @@ ENV DATABASE_PATH=/app/fundamental_analysis.db
 EXPOSE 8080
 
 # Set the command to run when the container starts
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["python", "main.py"]

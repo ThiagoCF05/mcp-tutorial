@@ -17,4 +17,4 @@ COPY fundamental_analyst/ ./fundamental_analyst
 EXPOSE 8080
 
 # Set the command to run when the container starts
-CMD ["adk", "web", "--port", "7685", "--host", "0.0.0.0"]
+CMD ["adk", "web", "--port", "7000", "--host", "0.0.0.0"]

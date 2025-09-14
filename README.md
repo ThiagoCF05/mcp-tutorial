@@ -12,7 +12,31 @@ mv mcp-tutorial.pub.pem mcp-server/
 
 It will generate the public (`mcp-tutorial.pub.pem`) and private (`mcp-tutorial.pem`) keys.
 
-## JWT Server
+## Env Variables
+
+Create `.env` files from `dev.env` and set the values on the folders:
+
+- jwt-server
+- mcp-server
+- google-adk-agent
+
+## Run
+
+Run the project by doing:
+
+```bash
+docker compose up
+```
+
+To stop it, you may do:
+
+```bash
+docker compose down --rmi all
+```
+
+#
+
+### JWT Server
 
 Go to folder:
 
@@ -32,7 +56,11 @@ Run it:
 docker run -p 8000:8000 jwt-server
 ```
 
-## MCP Server
+## Docker
+
+To run the servers separately, you may follow the subsequent sections below.
+
+### MCP Server
 
 Go to folder:
 
@@ -52,7 +80,7 @@ Run it:
 docker run -p 8080:8080 mcp-server
 ```
 
-## Agent Server
+### Agent Server
 
 Go to folder:
 
