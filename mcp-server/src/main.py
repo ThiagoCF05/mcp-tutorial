@@ -4,9 +4,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from fastmcp import FastMCP
-from src.config import PUBLIC_KEY, JWT_ISSUER, JWT_AUDIENCE, JWT_ALGORITHM
-from src.tools import query_fundamental_analysis
-from src.utils import get_verifier
+from config import PUBLIC_KEY, JWT_ISSUER, JWT_AUDIENCE, JWT_ALGORITHM
+from tools import query_fundamental_analysis
+from utils import get_verifier
 
 mcp = FastMCP(
     name="Fundamental Analysis SQL Database", 
