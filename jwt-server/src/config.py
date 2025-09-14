@@ -1,0 +1,7 @@
+import os
+
+PRIVATE_KEY = os.getenv("PRIVATE_KEY")
+JWT_ISSUER = os.getenv("JWT_ISSUER")
+JWT_AUDIENCE = os.getenv("JWT_AUDIENCE")
+JWT_ALGORITHM = os.getenv("JWT_ALGORITHM")
+DATABASE_PATH = os.getenv("DATABASE_PATH")
