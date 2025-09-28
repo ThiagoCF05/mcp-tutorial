@@ -1,27 +1,34 @@
 import asyncio
 
-from agents import Agent, Runner, function_tool
+from agents import ModelSettings, Runner
+from openai.types.shared import Reasoning
+from tools import code_interpreter
+from servers import get_aws_mcp_server
+from financial_agents import get_agent
+from financial_agents.financial_analyst import AGENT_INSTRUCTIONS
 from dotenv import load_dotenv
 
 load_dotenv()
 
 
-@function_tool
-def get_weather(city: str) -> str:
-    return f"The weather in {city} is sunny."
-
-
-agent = Agent(
-    name="Hello world",
-    instructions="You are a helpful agent.",
-    tools=[get_weather],
-)
-
-
 async def main():
-    result = await Runner.run(agent, input="What's the weather in Tokyo?")
+    server = await get_aws_mcp_server()
+    await server.connect()
+    agent = get_agent(
+        name="financial_analyst",
+        instructions=AGENT_INSTRUCTIONS,
+        tools=[code_interpreter],
+        servers=[server],
+        model="gpt-5",
+        model_settings=ModelSettings(
+            reasoning=Reasoning(effort="low"), verbosity="medium"
+        ),
+    )
+
+    inp_data = "Fazer análise fundamentalista da empresa AURE3 em Dezembro de 2024"
+    result = await Runner.run(agent, input=inp_data)
     print(result.final_output)
-    # The weather in Tokyo is sunny.
+    await server.cleanup()
 
 
 if __name__ == "__main__":
