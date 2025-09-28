@@ -11,3 +11,8 @@ dependencies = [
     "mcp>=1.14.0",
     "openai>=1.107.2",
 ]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.3.0",
+]

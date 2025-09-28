@@ -1,10 +1,11 @@
-from dotenv import load_dotenv
-load_dotenv()
 import os
 from google.adk.agents import Agent
 from google.adk.models.lite_llm import LiteLlm
 from google.adk.tools.mcp_tool.mcp_session_manager import StreamableHTTPServerParams
 from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset
+from dotenv import load_dotenv
+
+load_dotenv()
 
 AGENT_INSTRUCTIONS = """Você é um analista de mercado que analisa o balanço patrimonial de empresas para extrair informações relevantes como:
 
@@ -44,27 +45,28 @@ Observações:
 
 AGENT_DESCRIPTION = "A financial analysis agent for the Brazilian stock market"
 
+
 def get_access_token() -> str:
     import requests
+
     jwt_url = os.getenv("JWT_MCP_URL")
     data = {
         "username": os.getenv("MCP_USERNAME"),
-        "password": os.getenv("MCP_PASSWORD")
+        "password": os.getenv("MCP_PASSWORD"),
     }
     r = requests.post(jwt_url, params=data)
-    token_info  = r.json()
+    token_info = r.json()
     token = token_info["access_token"]
     return token
-    
+
 
 tools = MCPToolset(
     connection_params=StreamableHTTPServerParams(
         url=os.getenv("MCP_URL"),
-        headers={
-            "Authorization": f"Bearer {get_access_token()}"
-        }
+        headers={"Authorization": f"Bearer {get_access_token()}"},
     )
 )
+
 
 def code_interpreter(code: str) -> dict:
     """
@@ -73,7 +75,7 @@ def code_interpreter(code: str) -> dict:
     You should import any libraries that you wish to use. You have access to any libraries the user has installed.
 
     The code passed to this function is executed in isolation. It should be complete at the time it is passed to this function.
-    
+
     The result MUST be printed at the end.
 
     You should interpret the output and errors returned from this function, and attempt to fix any problems.
@@ -83,12 +85,14 @@ def code_interpreter(code: str) -> dict:
     """
     import subprocess
     import sys
+
     try:
         result = subprocess.run([sys.executable, "-c", code], capture_output=True)
         report = f"StdOut:\n{result.stdout}\nStdErr:\n{result.stderr}"
-        return { "status": "success", "report": report }
+        return {"status": "success", "report": report}
     except Exception as e:
-        return { "status": "error", "report": f"Failed to run code: {e}" }
+        return {"status": "error", "report": f"Failed to run code: {e}"}
+
 
 root_agent = Agent(
     name="mcp_agent",
