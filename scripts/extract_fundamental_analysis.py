@@ -1,15 +1,15 @@
 import json
 import os
-
+from playwright.sync_api import sync_playwright
+from tqdm import tqdm
+from bs4 import BeautifulSoup
+import pandas as pd
+import time
 import logging
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-import pandas as pd
-import time
-from bs4 import BeautifulSoup
-from playwright.sync_api import sync_playwright
-from tqdm import tqdm
 
 def extract_stock_ids() -> list[str]:
     stock_ids = []
@@ -17,10 +17,10 @@ def extract_stock_ids() -> list[str]:
         try:
             with sync_playwright() as p:
                 browser = p.firefox.launch(headless=True)
-                url = f"https://www.fundamentus.com.br/resultado.php?setor={i+1}"
+                url = f"https://www.fundamentus.com.br/resultado.php?setor={i + 1}"
                 page = browser.new_page()
                 page.goto(url)
-                
+
                 html = BeautifulSoup(page.inner_html(selector="#resultado"))
                 trs = html.find("tbody").find_all("tr")
                 for tr in trs:
@@ -28,9 +28,10 @@ def extract_stock_ids() -> list[str]:
                     stock_ids.append(row[0])
                 browser.close()
         except Exception as e:
-            logger.error(f"Error extracting stock ids for setor {i+1}: {e}")
+            logger.error(f"Error extracting stock ids for setor {i + 1}: {e}")
         time.sleep(1)
     return stock_ids
+
 
 def extract_fundamental_analysis(stock_id: str) -> dict:
     with sync_playwright() as p:
@@ -38,10 +39,21 @@ def extract_fundamental_analysis(stock_id: str) -> dict:
         browser = p.firefox.launch(headless=True)
         page = browser.new_page()
         page.goto(url)
-        
+
         soup = BeautifulSoup(page.inner_html(selector=".conteudo"))
-            
-        columns_to_ignore = ["Dia", "Mês", "30 dias", "12 meses", "2025", "2024", "2023", "2022", "2021", "2020"]
+
+        columns_to_ignore = [
+            "Dia",
+            "Mês",
+            "30 dias",
+            "12 meses",
+            "2025",
+            "2024",
+            "2023",
+            "2022",
+            "2021",
+            "2020",
+        ]
 
         label, value = "Geral", None
         data = {}
@@ -50,14 +62,20 @@ def extract_fundamental_analysis(stock_id: str) -> dict:
             if "label" in class_:
                 label = td.text.strip().replace("?", "")
             elif "data" in class_:
-                value = td.text.strip().replace(".", "").replace(",", ".").replace("%", "").strip()
+                value = (
+                    td.text.strip()
+                    .replace(".", "")
+                    .replace(",", ".")
+                    .replace("%", "")
+                    .strip()
+                )
                 try:
                     value = float(value)
-                except:
+                except Exception:
                     pass
             else:
                 label, value = None, None
-            
+
             if label and value:
                 if label in data:
                     label = f"{label} (3 meses)"
@@ -66,8 +84,9 @@ def extract_fundamental_analysis(stock_id: str) -> dict:
                 label, value = None, None
 
         browser.close()
-    
+
     return data
+
 
 if __name__ == "__main__":
     logger.info("Extracting stock ids")
@@ -88,5 +107,9 @@ if __name__ == "__main__":
             logger.error(f"Error extracting fundamental analysis for {stock_id}: {e}")
     df = pd.DataFrame(analysis)
     df = df.drop(columns=["2016", "2017", "2018", "2019"])
-    df = df[~df["Últ balanço processado"].isin(["30/09/2022", "30/09/2021", "31/12/2021", "30/09/2023"])]
+    df = df[
+        ~df["Últ balanço processado"].isin(
+            ["30/09/2022", "30/09/2021", "31/12/2021", "30/09/2023"]
+        )
+    ]
     df.to_csv("fundamental_analysis.csv", index=False)

@@ -9,3 +9,8 @@ dependencies = [
     "fastapi>=0.116.1",
     "fastmcp>=2.12.3",
 ]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.3.0",
+]
