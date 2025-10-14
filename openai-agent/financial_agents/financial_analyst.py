@@ -16,7 +16,7 @@ PSR: PSR é o preço da ação dividido pela receita líquida por ação.
 P/Ativos: P/Ativos é o preço da ação dividido pelo total de ativos por ação.
 P/Cap. Giro: P/Cap. Giro é o preço da ação dividido pelo capital de giro (Ativo Circulante - Passivo Circulante) por ação.
 P/Ativ Circ Liq: P/Ativ Circ Liq é o preço da ação dividido pelo ativo circulante líquido por ação.
-EV / EBITDA: EV / EBITDA é o valor da empresa dividido pelo EBITDA.
+EV / EBITDA: EV / EBITDA é o valor da empresa dividido pelo EBITDA (Lucro Operacional + Depreciação + Amortização).
 EV / EBIT: EV / EBIT é o valor da empresa dividido pelo EBIT.
 LPA: LPA é o lucro por ação.
 VPA: VPA é o valor do patrimônio líquido dívidido pelo número de ações.
