@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-write_folder = "experiments/session1"
+write_folder = "experiments/session3"
 os.makedirs(write_folder, exist_ok=True)
 
 price_file = "/Users/thiagocastroferreira/Desktop/kubernetes/mcp-tutorial/fundamental_analysis/2025-04-17/fundamental_analysis.csv"
@@ -59,10 +59,11 @@ Interpretar resultados e dar recomendações de compra, neutralidade ou venda.""
 
 EXPERIMENT_METADATA = {
     "model": "gpt-5",
-    "reasoning": "low",
+    "reasoning": "medium",
     "verbosity": "medium",
     "max_turns": 30,
     "template": str(TEMPLATE_INPUT),
+    "planning": False,
 }
 with open(f"""{write_folder}/experiment_metadata.json""", "w") as f:
     json.dump(EXPERIMENT_METADATA, f, indent=4)
@@ -92,9 +93,28 @@ async def analyse(name: str, cnpj: str, stock_id: str, price: float):
     result = await Runner.run(
         agent, input=inp_data, max_turns=EXPERIMENT_METADATA["max_turns"]
     )
+
+    usage = result.context_wrapper.usage
+    nrequests = usage.requests
+    input_tokens = usage.input_tokens
+    output_tokens = usage.output_tokens
+    total_tokens = usage.total_tokens
     steps = [item.to_input_item() for item in result.new_items]
+
     with open(f"{write_folder}/{stock_id}.json", "w") as f:
-        json.dump(steps, f, indent=4)
+        json.dump(
+            {
+                "steps": steps,
+                "usage": {
+                    "requests": nrequests,
+                    "input_tokens": input_tokens,
+                    "output_tokens": output_tokens,
+                    "total_tokens": total_tokens,
+                },
+            },
+            f,
+            indent=4,
+        )
 
     with open(f"{write_folder}/{stock_id}.txt", "w") as f:
         f.write(result.final_output)
