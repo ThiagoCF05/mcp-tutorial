@@ -2,10 +2,11 @@ import asyncio
 import json
 import os
 import pandas as pd
+import time
 
 from agents import ModelSettings, Runner
 from openai.types.shared import Reasoning
-from tools import code_interpreter, cvm_dfp_composition_query, cvm_dfp_base_query
+from tools import code_interpreter, cvm_composition_query, cvm_base_query
 from servers import get_aws_mcp_server
 from financial_agents import get_agent
 from financial_agents.financial_analyst import AGENT_INSTRUCTIONS
@@ -78,8 +79,8 @@ async def analyse(name: str, cnpj: str, stock_id: str, price: float):
         instructions=AGENT_INSTRUCTIONS,
         tools=[
             code_interpreter,
-            cvm_dfp_base_query,
-            cvm_dfp_composition_query,
+            cvm_base_query,
+            cvm_composition_query,
         ],
         servers=[],
         model=EXPERIMENT_METADATA["model"],
@@ -90,9 +91,11 @@ async def analyse(name: str, cnpj: str, stock_id: str, price: float):
     )
 
     inp_data = TEMPLATE_INPUT.format(name=name, cnpj=cnpj, price_str=price_str)
+    start = time.time()
     result = await Runner.run(
         agent, input=inp_data, max_turns=EXPERIMENT_METADATA["max_turns"]
     )
+    end = time.time()
 
     usage = result.context_wrapper.usage
     nrequests = usage.requests
@@ -111,6 +114,7 @@ async def analyse(name: str, cnpj: str, stock_id: str, price: float):
                     "output_tokens": output_tokens,
                     "total_tokens": total_tokens,
                 },
+                "time": end - start,
             },
             f,
             indent=4,
