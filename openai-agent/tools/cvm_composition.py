@@ -14,7 +14,7 @@ def cvm_composition_query(inp: QueryInput) -> dict:
 
     CREATE TABLE IF NOT EXISTS CVM_SHARE_COMPOSITION (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-            CNPJ TEXT NOT NULL, # CNPJ da empresa
+        CNPJ TEXT NOT NULL, # CNPJ da empresa (Formato 00.000.000/0000-00)
         REPORT_DATE DATETIME NOT NULL, # Data do relatório
         COMPANY_NAME TEXT NOT NULL, # Nome da empresa
         VERSION TEXT NOT NULL, # Versão

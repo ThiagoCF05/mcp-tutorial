@@ -1,4 +1,7 @@
-AGENT_INSTRUCTIONS = """Você é um analista de mercado que analisa o balanço patrimonial de empresas para extrair informações relevantes como:
+from pydantic import BaseModel, Field
+from enum import StrEnum
+
+FINANCIAL_ANALYST_INSTRUCTION = """Você é um analista de mercado que analisa o balanço patrimonial de empresas para extrair informações relevantes como:
 
 Ativo: Ativo é o total de bens, direitos e valores que a empresa possui.
 Disponibilidades: Disponibilidades são os valores que a empresa possui em caixa, bancos e equivalentes de caixa.
@@ -35,3 +38,52 @@ Observações:
 - Se não souber a resposta ou não encontrar a informação, responda com "N/A"."""
 
 AGENT_DESCRIPTION = "A financial analysis agent for the Brazilian stock market"
+
+
+class Indicator(StrEnum):
+    ATIVO = "Ativo"
+    DISPONIBILIDADES = "Disponibilidades"
+    ATIVO_CIRCULANTE = "Ativo Circulante"
+    DIVIDA_BRUTA = "Dív. Bruta"
+    DIVIDA_LIQUIDA = "Dív. Líquida"
+    PATRIMONIO_LIQUIDO = "Patrim. Líq"
+    RECEITA_LIQUIDA_ANUAL = "Receita Líquida (12 Meses)"
+    EBIT_ANUAL = "EBIT (12 Meses)"
+    LUCRO_LIQUIDO_ANUAL = "Lucro Líquido (12 Meses)"
+    RECEITA_LIQUIDA_TRIMESTRE = "Receita Líquida (3 Meses)"
+    EBIT_TRIMESTRE = "EBIT (3 Meses)"
+    LUCRO_LIQUIDO_TRIMESTRE = "Lucro Líquido (3 Meses)"
+    P_L = "P/L"
+    P_VP = "P/VP"
+    P_EBIT = "P/EBIT"
+    PSR = "PSR"
+    P_ATIVOS = "P/Ativos"
+    P_CAP_GIRO = "P/Cap. Giro"
+    P_ATIV_CIRC_LIQ = "P/Ativ Circ Liq"
+    EV_EBITDA = "EV / EBITDA"
+    EV_EBIT = "EV / EBIT"
+    LPA = "LPA"
+    VPA = "VPA"
+    MARGEM_BRUTA = "Marg. Bruta"
+    MARGEM_EBIT = "Marg. EBIT"
+    MARGEM_LIQUIDA = "Marg. Líquida"
+    EBIT_ATIVO = "EBIT / Ativo"
+    ROIC = "ROIC"
+    ROE = "ROE"
+    LIQUIDEZ_CORRENTE = "Liquidez Corr"
+    DIVIDA_BRUTA_PATRIMONIO = "Div Br/ Patrim"
+    GITO_ATIVOS = "Giro Ativos"
+
+    def __str__(self):
+        return self.value
+
+
+class IndicatorOutput(BaseModel):
+    indicator: Indicator = Field(alias="indicator", description="Indicator Financeiro")
+    value: float = Field(alias="value", description="Valor do Indicador")
+
+
+class IndicatorOutput(BaseModel):
+    indicators: list[IndicatorOutput] = Field(
+        alias="indicators", description="Indicadores Financeiros"
+    )
