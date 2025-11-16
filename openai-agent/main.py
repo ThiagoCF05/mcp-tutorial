@@ -6,7 +6,7 @@ import time
 
 from agents import ModelSettings, Runner
 from openai.types.shared import Reasoning
-from tools import code_interpreter, cvm_composition_query, cvm_base_query
+from tools import code_interpreter, cvm_composition_query_tool, cvm_base_query_tool
 
 # from servers import get_aws_mcp_server
 from financial_agents import get_agent
@@ -115,8 +115,8 @@ def analyse(name: str, cnpj: str, stock_id: str, price: float):
         instructions=FINANCIAL_ANALYST_INSTRUCTION,
         tools=[
             code_interpreter,
-            cvm_base_query,
-            cvm_composition_query,
+            cvm_base_query_tool,
+            cvm_composition_query_tool,
         ],
         servers=[],
         model=EXPERIMENT_METADATA["model"],
