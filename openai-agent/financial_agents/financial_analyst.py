@@ -35,7 +35,8 @@ Giro Ativos: Giro Ativos é a receita líquida dividido pelo total de ativos.
 
 Observações:
 - Use o interpretador Python para calcular valores caso seja necessário.
-- Se não souber a resposta ou não encontrar a informação, responda com "N/A"."""
+- Se não souber a resposta ou não encontrar a informação, responda com "N/A".
+- Indicadores como 'Marg. Bruta', 'Marg. EBIT', 'Marg. Líquida', 'EBIT / Ativo', 'ROIC' e 'ROE' DEVEM ser reportados em porcentagem com duas casas decimais (XX.XX %)."""
 
 AGENT_DESCRIPTION = "A financial analysis agent for the Brazilian stock market"
 
