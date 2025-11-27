@@ -18,7 +18,7 @@ P/EBIT: P/EBIT é o preço da ação dividido pelo EBIT.
 PSR: PSR é o preço da ação dividido pela receita líquida por ação.
 P/Ativos: P/Ativos é o preço da ação dividido pelo total de ativos por ação.
 P/Cap. Giro: P/Cap. Giro é o preço da ação dividido pelo capital de giro (Ativo Circulante - Passivo Circulante) por ação.
-P/Ativ Circ Liq: P/Ativ Circ Liq é o preço da ação dividido pelo ativo circulante líquido por ação.
+P/Ativ Circ Liq: P/Ativ Circ Liq é o preço da ação dividido pelo ativo circulante líquido por ação. O Ativo Circulante Líquido é o ativo circulante menos as dívidas de longo e curto prazo da empresa, ou seja, após pagar todas as dívidas, quanto sobraria dos ativos mais líquidos da empresa.
 EV / EBITDA: EV / EBITDA é o valor da empresa dividido pelo EBITDA (Lucro Operacional + Depreciação + Amortização).
 EV / EBIT: EV / EBIT é o valor da empresa dividido pelo EBIT.
 LPA: LPA é o lucro por ação.
@@ -36,7 +36,8 @@ Giro Ativos: Giro Ativos é a receita líquida dividido pelo total de ativos.
 Observações:
 - Use o interpretador Python para calcular valores caso seja necessário.
 - Se não souber a resposta ou não encontrar a informação, responda com "N/A".
-- Indicadores como 'Marg. Bruta', 'Marg. EBIT', 'Marg. Líquida', 'EBIT / Ativo', 'ROIC' e 'ROE' DEVEM ser reportados em porcentagem com duas casas decimais (XX.XX %)."""
+- Indicadores como 'Marg. Bruta', 'Marg. EBIT', 'Marg. Líquida', 'EBIT / Ativo', 'ROIC' e 'ROE' DEVEM ser reportados em porcentagem com duas casas decimais (XX.XX %).
+- Para calcular indicadores trimestrais (3 meses), utilize a diferença de resultado para o trimestre anterior."""
 
 AGENT_DESCRIPTION = "A financial analysis agent for the Brazilian stock market"
 
@@ -48,12 +49,12 @@ class Indicator(StrEnum):
     DIVIDA_BRUTA = "Dív. Bruta"
     DIVIDA_LIQUIDA = "Dív. Líquida"
     PATRIMONIO_LIQUIDO = "Patrim. Líq"
-    RECEITA_LIQUIDA_ANUAL = "Receita Líquida (12 Meses)"
-    EBIT_ANUAL = "EBIT (12 Meses)"
-    LUCRO_LIQUIDO_ANUAL = "Lucro Líquido (12 Meses)"
-    RECEITA_LIQUIDA_TRIMESTRE = "Receita Líquida (3 Meses)"
-    EBIT_TRIMESTRE = "EBIT (3 Meses)"
-    LUCRO_LIQUIDO_TRIMESTRE = "Lucro Líquido (3 Meses)"
+    RECEITA_LIQUIDA_ANUAL = "Receita Líquida (12 meses)"
+    EBIT_ANUAL = "EBIT (12 meses)"
+    LUCRO_LIQUIDO_ANUAL = "Lucro Líquido (12 meses)"
+    RECEITA_LIQUIDA_TRIMESTRE = "Receita Líquida (3 meses)"
+    EBIT_TRIMESTRE = "EBIT (3 meses)"
+    LUCRO_LIQUIDO_TRIMESTRE = "Lucro Líquido (3 meses)"
     P_L = "P/L"
     P_VP = "P/VP"
     P_EBIT = "P/EBIT"
