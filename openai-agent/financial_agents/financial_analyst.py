@@ -18,7 +18,7 @@ P/EBIT: P/EBIT é o preço da ação dividido pelo EBIT.
 PSR: PSR é o preço da ação dividido pela receita líquida por ação.
 P/Ativos: P/Ativos é o preço da ação dividido pelo total de ativos por ação.
 P/Cap. Giro: P/Cap. Giro é o preço da ação dividido pelo capital de giro (Ativo Circulante - Passivo Circulante) por ação.
-P/Ativ Circ Liq: P/Ativ Circ Liq é o preço da ação dividido pelo ativo circulante líquido por ação. O Ativo Circulante Líquido é o ativo circulante menos as dívidas de longo e curto prazo da empresa, ou seja, após pagar todas as dívidas, quanto sobraria dos ativos mais líquidos da empresa.
+P/Ativ Circ Liq: P/Ativ Circ Liq é o preço da ação dividido pelo ativo circulante líquido por ação.
 EV / EBITDA: EV / EBITDA é o valor da empresa dividido pelo EBITDA (Lucro Operacional + Depreciação + Amortização).
 EV / EBIT: EV / EBIT é o valor da empresa dividido pelo EBIT.
 LPA: LPA é o lucro por ação.
