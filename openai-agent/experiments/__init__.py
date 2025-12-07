@@ -16,14 +16,13 @@ class Intensity(StrEnum):
 
 
 class ExperimentMetadata(BaseModel):
-    name: str
     model: Model = Field(description="Model to be used")
-    reasoning: Intensity | None = Field(description="Reasoning intensity")
-    verbosity: Intensity | None = Field(description="Verbosity intensity")
-    max_turns: int = Field(description="Maximum number of turns")
-    planning: bool = Field(description="Use planning")
+    max_turns: int = Field(default=30, description="Maximum number of turns")
     structured_output: dict = Field(description="Structured output")
     reflection: bool = Field(description="Use reflection")
+    write_folder: str = Field(description="Folder to write results")
+    reasoning: Intensity | None = Field(default=None, description="Reasoning intensity")
+    verbosity: Intensity | None = Field(default=None, description="Verbosity intensity")
 
 
 class StockInput(BaseModel):

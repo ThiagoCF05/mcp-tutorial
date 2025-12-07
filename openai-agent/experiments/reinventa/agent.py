@@ -102,11 +102,12 @@ def guardrail(
 
 
 def run(experiment_metadata: ExperimentMetadata):
-    write_folder = f"experiments/{experiment_metadata.model}/regular"
+    write_folder = f"{experiment_metadata.write_folder}/{experiment_metadata.model}/agent_{experiment_metadata.reflection}"
     os.makedirs(write_folder, exist_ok=True)
     with open(f"""{write_folder}/experiment_metadata.json""", "w") as f:
         json.dump(experiment_metadata.model_dump(), f, indent=4)
 
+    agent = init_agent(experiment_metadata=experiment_metadata)
     price_df = pd.read_csv(PRICE_FILE)
     for stock in STOCKS:
         name, cnpj, stock_id = stock.name, stock.cnpj, stock.stock_id
@@ -118,17 +119,17 @@ def run(experiment_metadata: ExperimentMetadata):
 
         start = time.time()
         result = analyse(
+            agent=agent,
             name=name,
             cnpj=cnpj,
-            stock_id=stock_id,
             price=price_str,
             experiment_metadata=experiment_metadata,
         )
         if experiment_metadata.reflection:
             result = guardrail(
+                agent=agent,
                 name=name,
                 cnpj=cnpj,
-                stock_id=stock_id,
                 price=price_str,
                 result=result,
                 experiment_metadata=experiment_metadata,
@@ -136,10 +137,9 @@ def run(experiment_metadata: ExperimentMetadata):
         end = time.time()
 
         save_results(
-            name=name,
-            cnpj=cnpj,
+            write_folder=write_folder,
             stock_id=stock_id,
             result=result,
-            experiment_metadata=experiment_metadata,
-            time=end - start,
+            elapsed_time=end - start,
         )
+        time.sleep(40)
