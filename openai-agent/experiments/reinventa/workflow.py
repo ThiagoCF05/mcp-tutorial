@@ -1,0 +1,206 @@
+import asyncio
+import json
+import os
+import pandas as pd
+import time
+
+from agents import Agent, ModelSettings, Runner, RunResult
+from experiments import ExperimentMetadata
+from experiments.reinventa.config import PRICE_FILE, STOCKS
+from experiments.utils import save_results
+from openai.types.shared import Reasoning
+from tools import code_interpreter
+from tools.cvm_composition import cvm_composition_query
+from tools.cvm_base import cvm_base_query
+from financial_agents import get_agent
+from financial_agents.financial_analyst import (
+    FINANCIAL_ANALYST_INSTRUCTION,
+    IndicatorOutput,
+    Indicator,
+)
+
+TEMPLATE_INPUT = """Fazer análise fundamentalista da empresa {name} (CNPJ {cnpj}) em Dezembro de 2024 com cotação a {price_str} reais.
+
+# Relatório DFP/ITR de Dezembro de 2024
+{report}
+
+# Composição de ativos de Dezembro de 2024
+{composition}
+
+# Relatório DFP/ITR do Trimestre Anterior
+{previous_report}
+
+Feedback: {feedback}"""
+
+
+def init_agent(experiment_metadata: ExperimentMetadata) -> Agent:
+    model_settings = ModelSettings(tool_choice="required")
+    if experiment_metadata.reasoning:
+        reasoning = Reasoning(effort=experiment_metadata.reasoning)
+        model_settings = ModelSettings(
+            reasoning=reasoning,
+            verbosity=experiment_metadata.verbosity,
+        )
+
+    return get_agent(
+        name="financial_analyst",
+        instructions=FINANCIAL_ANALYST_INSTRUCTION,
+        tools=[
+            code_interpreter,
+        ],
+        servers=[],
+        model=experiment_metadata.model,
+        model_settings=model_settings,
+        output_type=IndicatorOutput,
+    )
+
+
+def get_stock_report(cnpj: str, date: str) -> str:
+    query = f"""
+    SELECT ACCOUNT_NUMBER, ACCOUNT_NAME, ACCOUNT_VALUE 
+    FROM DFP_ITR_CVM 
+    WHERE CNPJ = '{cnpj}' AND ANALYSIS_END_PERIOD_DATE = '{date}' 
+    ORDER BY ACCOUNT_NUMBER;"""
+
+    result = cvm_base_query({"sql_query": query})
+    return result.get("report", "")
+
+
+def get_stock_composition(cnpj: str, date: str) -> str:
+    query = f"""
+    SELECT 
+        REPORT_DATE, 
+        COMPANY_NAME, 
+        ORDINARY_SHARES_ISSUED, 
+        ORDINARY_SHARES_TREASURY, 
+        PREFERRED_SHARES_ISSUED, 
+        PREFERRED_SHARES_TREASURY, 
+        TOTAL_SHARES_ISSUED, 
+        TOTAL_SHARES_TREASURY 
+    FROM CVM_SHARE_COMPOSITION 
+    WHERE CNPJ = '{cnpj}' AND REPORT_DATE = '{date}';"""
+
+    result = cvm_composition_query({"sql_query": query})
+    return result.get("report", "")
+
+
+def analyse(
+    agent: Agent,
+    name: str,
+    cnpj: str,
+    price: str,
+    report: str,
+    composition: str,
+    previous_report: str,
+    experiment_metadata: ExperimentMetadata,
+) -> RunResult:
+    feedback = "Compute todos os indicadores fundamentalistas disponíveis"
+
+    inp_data = TEMPLATE_INPUT.format(
+        name=name,
+        cnpj=cnpj,
+        price_str=price,
+        report=report,
+        composition=composition,
+        previous_report=previous_report,
+        feedback=feedback,
+    )
+
+    return asyncio.run(
+        Runner.run(agent, input=inp_data, max_turns=experiment_metadata.max_turns)
+    )
+
+
+def guardrail(
+    agent: Agent,
+    name: str,
+    cnpj: str,
+    price: str,
+    report: str,
+    composition: str,
+    previous_report: str,
+    result: RunResult,
+    experiment_metadata: ExperimentMetadata,
+) -> RunResult:
+    all_indicators = [str(i) for i in Indicator]
+    missing_indicators = [
+        str(i.indicator)
+        for i in result.final_output.indicators
+        if str(i.indicator) not in all_indicators or i.value == 0
+    ]
+    if len(missing_indicators) > 0:
+        # reflection
+        feedback = f"Compute SOMENTE os seguintes indicadores fundamentalistas: {missing_indicators}"
+        inp_data = TEMPLATE_INPUT.format(
+            name=name,
+            cnpj=cnpj,
+            price_str=price,
+            report=report,
+            composition=composition,
+            previous_report=previous_report,
+            feedback=feedback,
+        )
+        reflected_result = asyncio.run(
+            Runner.run(agent, input=inp_data, max_turns=experiment_metadata.max_turns)
+        )
+        for i in reflected_result.final_output.indicators:
+            if str(i.indicator) in missing_indicators:
+                result.final_output.indicators = [
+                    i_
+                    for i_ in result.final_output.indicators
+                    if str(i.indicator) != str(i_.indicator)
+                ]
+                result.final_output.indicators.append(i)
+
+
+def run(experiment_metadata: ExperimentMetadata):
+    write_folder = f"experiments/{experiment_metadata.model}/regular"
+    os.makedirs(write_folder, exist_ok=True)
+    with open(f"""{write_folder}/experiment_metadata.json""", "w") as f:
+        json.dump(experiment_metadata.model_dump(), f, indent=4)
+
+    price_df = pd.read_csv(PRICE_FILE)
+    for stock in STOCKS:
+        name, cnpj, stock_id = stock.name, stock.cnpj, stock.stock_id
+        if os.path.exists(f"{write_folder}/{stock_id}.json"):
+            continue
+        print(stock)
+        price = float(price_df[price_df["Papel"] == stock_id].iloc[0]["Cotação"])
+        price_str = f"{price:.2f}".replace(".", ",")
+
+        start = time.time()
+        report = get_stock_report(cnpj=cnpj, date="2024-12-31")
+        composition = get_stock_composition(cnpj=cnpj, date="2024-12-31")
+        previous_report = get_stock_report(cnpj=cnpj, date="2024-09-30")
+        result = analyse(
+            name=name,
+            cnpj=cnpj,
+            stock_id=stock_id,
+            price=price_str,
+            report=report,
+            composition=composition,
+            previous_report=previous_report,
+            experiment_metadata=experiment_metadata,
+        )
+        if experiment_metadata.reflection:
+            result = guardrail(
+                name=name,
+                cnpj=cnpj,
+                stock_id=stock_id,
+                price=price_str,
+                report=report,
+                composition=composition,
+                previous_report=previous_report,
+                result=result,
+                experiment_metadata=experiment_metadata,
+            )
+        end = time.time()
+
+        save_results(
+            name=name,
+            cnpj=cnpj,
+            stock_id=stock_id,
+            result=result,
+            experiment_metadata=experiment_metadata,
+            time=end - start,
+        )
