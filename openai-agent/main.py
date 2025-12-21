@@ -1,12 +1,12 @@
 from dotenv import load_dotenv
 from experiments import ExperimentMetadata, Model, Intensity
-from experiments.reinventa.agent import run as run_agent
-from experiments.reinventa.workflow import run as run_workflow
+from experiments.final_report2025.agent import run as run_agent
+from experiments.final_report2025.workflow import run as run_workflow
 from financial_agents.financial_analyst import IndicatorOutput
 
 load_dotenv()
 
-WRITE_FOLDER = "/Users/thiagocastroferreira/Desktop/kubernetes/results/reinventa"
+WRITE_FOLDER = "/Users/thiagocastroferreira/Desktop/kubernetes/results/final_report2025"
 
 print("GPT-4.1 Mini (no reflection)")
 experiment = ExperimentMetadata(
@@ -41,7 +41,7 @@ experiment = ExperimentMetadata(
 run_agent(experiment_metadata=experiment)
 run_workflow(experiment_metadata=experiment)
 
-print("\n\nGPT-4.1 Mini (with  reflection)")
+print("\n\nGPT-4.1 Nano (with  reflection)")
 experiment = ExperimentMetadata(
     model=Model.GPT_4_1_NANO,
     write_folder=WRITE_FOLDER,

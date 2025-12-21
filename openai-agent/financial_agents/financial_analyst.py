@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 from enum import StrEnum
 
-FINANCIAL_ANALYST_INSTRUCTION = """Você é um analista de mercado que analisa o balanço patrimonial de empresas para extrair informações relevantes como:
+FINANCIAL_ANALYST_INSTRUCTION = """Você é um analista de mercado que faz a análise fundamentalista de empresas para extrair informações relevantes como:
 
 Ativo: Ativo é o total de bens, direitos e valores que a empresa possui.
 Disponibilidades: Disponibilidades são os valores que a empresa possui em caixa, bancos e equivalentes de caixa.
