@@ -16,7 +16,9 @@ experiment = ExperimentMetadata(
     structured_output=IndicatorOutput.model_json_schema(),
     reflection=False,
 )
+print("Agent...")
 run_agent(experiment_metadata=experiment)
+print("Workflow...")
 run_workflow(experiment_metadata=experiment)
 
 print("\n\nGPT-4.1 Mini (with  reflection)")
@@ -27,7 +29,9 @@ experiment = ExperimentMetadata(
     structured_output=IndicatorOutput.model_json_schema(),
     reflection=True,
 )
+print("Agent...")
 run_agent(experiment_metadata=experiment)
+print("Workflow...")
 run_workflow(experiment_metadata=experiment)
 
 print("GPT-4.1 Nano (no reflection)")
@@ -38,7 +42,9 @@ experiment = ExperimentMetadata(
     structured_output=IndicatorOutput.model_json_schema(),
     reflection=False,
 )
+print("Agent...")
 run_agent(experiment_metadata=experiment)
+print("Workflow...")
 run_workflow(experiment_metadata=experiment)
 
 print("\n\nGPT-4.1 Nano (with  reflection)")
@@ -49,7 +55,9 @@ experiment = ExperimentMetadata(
     structured_output=IndicatorOutput.model_json_schema(),
     reflection=True,
 )
+print("Agent...")
 run_agent(experiment_metadata=experiment)
+print("Workflow...")
 run_workflow(experiment_metadata=experiment)
 
 print("GPT-5 Mini (no reflection)")
@@ -62,7 +70,9 @@ experiment = ExperimentMetadata(
     verbosity=Intensity.MEDIUM,
     reflection=False,
 )
+print("Agent...")
 run_agent(experiment_metadata=experiment)
+print("Workflow...")
 run_workflow(experiment_metadata=experiment)
 
 print("\n\nGPT-5 Mini (with  reflection)")
@@ -75,7 +85,9 @@ experiment = ExperimentMetadata(
     verbosity=Intensity.MEDIUM,
     reflection=True,
 )
+print("Agent...")
 run_agent(experiment_metadata=experiment)
+print("Workflow...")
 run_workflow(experiment_metadata=experiment)
 
 print("GPT-5 Nano (no reflection)")
@@ -88,7 +100,9 @@ experiment = ExperimentMetadata(
     verbosity=Intensity.MEDIUM,
     reflection=False,
 )
+print("Agent...")
 run_agent(experiment_metadata=experiment)
+print("Workflow...")
 run_workflow(experiment_metadata=experiment)
 
 print("\n\nGPT-5 Nano (with  reflection)")
@@ -101,5 +115,7 @@ experiment = ExperimentMetadata(
     verbosity=Intensity.MEDIUM,
     reflection=True,
 )
+print("Agent...")
 run_agent(experiment_metadata=experiment)
+print("Workflow...")
 run_workflow(experiment_metadata=experiment)
