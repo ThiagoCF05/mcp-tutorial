@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 from enum import StrEnum
 
-MANAGER_INSTRUCTIONS = """Você é gerente de mercado que recebe informações financeiras de empresas para ajudar a tomar decisões de investimento.
+MANAGER_INSTRUCTIONS = """Você é um gerente de mercado que recebe informações financeiras de empresas para ajudar a tomar decisões de investimento.
 
 Observações:
 - Use o interpretador Python como calculadora caso seja necessário.
