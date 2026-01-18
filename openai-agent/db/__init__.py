@@ -1,7 +1,7 @@
 __author__ = "thiagocastroferreira"
 
 from db.base_query import run_sql_query, ResponseFormat
-from datetime import datetime
+from datetime import datetime, timedelta
 
 PRICE_DATABASE_PATH = (
     "/Users/thiagocastroferreira/Desktop/kubernetes/mcp-tutorial/prices.db"
@@ -9,23 +9,30 @@ PRICE_DATABASE_PATH = (
 CVM_DATABASE_PATH = "/Users/thiagocastroferreira/Desktop/kubernetes/mcp-tutorial/cvm.db"
 
 
-def get_stock_report(cnpj: str, date: str | datetime) -> str:
-    if isinstance(date, datetime):
-        date = date.strftime("%Y-%m-%d")
+def _get_month_range(date: datetime) -> tuple[str, str]:
+    start_date = date.replace(day=1)
+    end_date = start_date + timedelta(days=32)
+
+    start_date = start_date.strftime("%Y-%m-%d")
+    end_date = end_date.replace(day=1).strftime("%Y-%m-%d")
+    return start_date, end_date
+
+
+def get_stock_report(cnpj: str, date: datetime) -> str:
+    start_date, end_date = _get_month_range(date)
 
     query = f"""
     SELECT ACCOUNT_NUMBER, ACCOUNT_NAME, ACCOUNT_VALUE 
     FROM DFP_ITR_CVM 
-    WHERE CNPJ = '{cnpj}' AND ANALYSIS_END_PERIOD_DATE = '{date}' 
+    WHERE CNPJ = '{cnpj}' AND ANALYSIS_END_PERIOD_DATE >= '{start_date}' AND ANALYSIS_END_PERIOD_DATE < '{end_date}' 
     ORDER BY ACCOUNT_NUMBER;"""
 
     result = run_sql_query(inp={"sql_query": query}, db_path=CVM_DATABASE_PATH)
     return result.get("report", "")
 
 
-def get_stock_composition(cnpj: str, date: str) -> str:
-    if isinstance(date, datetime):
-        date = date.strftime("%Y-%m-%d")
+def get_stock_composition(cnpj: str, date: datetime) -> str:
+    start_date, end_date = _get_month_range(date)
 
     query = f"""
     SELECT 
@@ -38,14 +45,16 @@ def get_stock_composition(cnpj: str, date: str) -> str:
         TOTAL_SHARES_ISSUED, 
         TOTAL_SHARES_TREASURY 
     FROM CVM_SHARE_COMPOSITION 
-    WHERE CNPJ = '{cnpj}' AND REPORT_DATE = '{date}';"""
+    WHERE CNPJ = '{cnpj}' AND REPORT_DATE >= '{start_date}' AND REPORT_DATE < '{end_date}';"""
 
     result = run_sql_query(inp={"sql_query": query}, db_path=CVM_DATABASE_PATH)
     return result.get("report", "")
 
 
 def get_stock_daily_info(
-    stock_id: str, date: str, response_format: ResponseFormat = ResponseFormat.MARKDOWN
+    stock_id: str,
+    date: str | datetime,
+    response_format: ResponseFormat = ResponseFormat.MARKDOWN,
 ) -> str:
     """
     Returns a string containing daily information about a given stock.
