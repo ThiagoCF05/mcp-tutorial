@@ -2,12 +2,16 @@ import experiments.investment_house.analyst as investment
 import finbr.dias_uteis as dus
 
 from datetime import datetime, timedelta
-from db import get_stock_report, get_stock_composition, get_stock_daily_info
+from db import get_stock_daily_info
+from db.base_query import ResponseFormat
 from experiments import ExperimentMetadata, Model, Intensity
 from experiments.reinventa.config import STOCKS
 from financial_agents.financial_analyst import (
     IndicatorOutput,
 )
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 def _get_first_workday(year, month):
@@ -46,33 +50,22 @@ if __name__ == "__main__":
             stock = STOCKS[1]
 
             # Get stock price in the day
-            daily_stock_price = get_stock_daily_info(
-                stock_id=stock.stock_id, date=analysis_date
+            daily_stock_info = get_stock_daily_info(
+                stock_id=stock.stock_id,
+                date=analysis_date,
+                response_format=ResponseFormat.DICT,
             )
+            if len(daily_stock_info) == 0:
+                continue
+            daily_stock_price = float(daily_stock_info[0]["PRECO_DE_ABERTURA"])
 
-            # Get last quarter reports of the stock (previous 3 months)
+            # Get last quarter reports date (previous 3 months)
             report_date = get_last_stock_report_date(analysis_date)
-            report = get_stock_report(cnpj=stock.cnpj, date=report_date)
-            composition = get_stock_composition(cnpj=stock.cnpj, date=report_date)
-
-            # Get previous reports of the stock (previous 6 months)
-            previous_report_date = report_date - timedelta(days=90)
-            previous_report = get_stock_report(
-                cnpj=stock.cnpj, date=previous_report_date
-            )
-            previous_composition = get_stock_composition(
-                cnpj=stock.cnpj, date=previous_report_date
-            )
-
-            # get first day of a month that is not weekend
-            date = datetime(2023, month, 1)
-            while date.weekday() > 4:
-                date += timedelta(days=1)
 
             result = investment.run(
                 stock=stock,
-                stock_price=stock.price,
-                date=date,
+                stock_price=daily_stock_price,
+                date=report_date,
                 experiment_metadata=experiment,
             )
             print(result.final_output)

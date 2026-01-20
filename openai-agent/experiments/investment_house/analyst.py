@@ -1,7 +1,7 @@
 import asyncio
 
 from agents import Agent, ModelSettings, Runner, RunResult
-from datetime import datetime
+from datetime import datetime, timedelta
 from db import get_stock_report, get_stock_composition
 from experiments import ExperimentMetadata, StockInput
 from openai.types.shared import Reasoning
@@ -54,6 +54,7 @@ def analyse(
     name: str,
     cnpj: str,
     price: str,
+    analysis_date: datetime,
     report: str,
     composition: str,
     previous_report: str,
@@ -64,6 +65,10 @@ def analyse(
     inp_data = TEMPLATE_INPUT.format(
         name=name,
         cnpj=cnpj,
+        date=analysis_date.strftime("%Y-%m-%d"),
+        previous_date=(analysis_date.replace(day=1) - timedelta(days=90)).strftime(
+            "%Y-%m"
+        ),
         price_str=price,
         report=report,
         composition=composition,
@@ -81,6 +86,7 @@ def guardrail(
     name: str,
     cnpj: str,
     price: str,
+    analysis_date: datetime,
     report: str,
     composition: str,
     previous_report: str,
@@ -100,6 +106,10 @@ def guardrail(
             name=name,
             cnpj=cnpj,
             price_str=price,
+            date=analysis_date.strftime("%Y-%m-%d"),
+            previous_date=(analysis_date.replace(day=1) - timedelta(days=90)).strftime(
+                "%Y-%m"
+            ),
             report=report,
             composition=composition,
             previous_report=previous_report,
@@ -141,21 +151,21 @@ def run(
 ):
     agent = init_agent(experiment_metadata=experiment_metadata)
 
-    if isinstance(date, datetime):
-        date = date.strftime("%Y-%m-%d")
-
+    # Get last quarter reports of the stock (previous 3 months)
     report = get_stock_report(cnpj=stock.cnpj, date=date)
     composition = get_stock_composition(cnpj=stock.cnpj, date=date)
-    previous_date = datetime.strptime(date, "%Y-%m-%d") - datetime.timedelta(days=90)
-    previous_date = previous_date.strftime("%Y-%m-%d")
+
+    # Get previous reports of the stock (previous 6 months)
+    previous_date = date.replace(day=1) - timedelta(days=90)
     previous_report = get_stock_report(cnpj=stock.cnpj, date=previous_date)
-    composition = get_stock_composition(cnpj=stock.cnpj, date=date)
+    composition = get_stock_composition(cnpj=stock.cnpj, date=previous_date)
 
     result = analyse(
         agent=agent,
         name=stock.name,
         cnpj=stock.cnpj,
         price=str(stock_price),
+        analysis_date=date,
         report=report,
         composition=composition,
         previous_report=previous_report,
@@ -167,6 +177,7 @@ def run(
             name=stock.name,
             cnpj=stock.cnpj,
             price=str(stock_price),
+            analysis_date=date,
             report=report,
             composition=composition,
             previous_report=previous_report,
