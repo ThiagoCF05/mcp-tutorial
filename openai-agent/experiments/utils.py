@@ -18,7 +18,7 @@ class AgentResult(TypedDict):
     output: dict
 
 
-def _get_result(result: RunResult, elapsed_time: float) -> AgentResult:
+def get_result(result: RunResult, elapsed_time: float) -> AgentResult:
     usage = result.context_wrapper.usage
     nrequests = usage.requests
     input_tokens = usage.input_tokens
@@ -45,7 +45,7 @@ def save_results(
     elapsed_time: float,
     experiment_id: int,
 ) -> None:
-    agent_result = _get_result(result, elapsed_time)
+    agent_result = get_result(result, elapsed_time)
 
     with open(f"{write_folder}/{stock_id}_{experiment_id}.json", "w") as f:
         json.dump(agent_result, f, indent=4)
