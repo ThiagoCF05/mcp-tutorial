@@ -57,9 +57,9 @@ def init_agent(experiment_metadata: ExperimentMetadata) -> Agent:
 
 def get_stock_report(cnpj: str, date: str) -> str:
     query = f"""
-    SELECT ACCOUNT_NUMBER, ACCOUNT_NAME, ACCOUNT_VALUE 
+    SELECT ACCOUNT_NUMBER, ACCOUNT_NAME, ACCOUNT_VALUE, VERSION, EXERC_ORDER, ANALYSIS_START_PERIOD_DATE, ANALYSIS_END_PERIOD_DATE
     FROM DFP_ITR_CVM 
-    WHERE CNPJ = '{cnpj}' AND ANALYSIS_END_PERIOD_DATE = '{date}' 
+    WHERE CNPJ = '{cnpj}' AND REPORT_DATE = '{date}' 
     ORDER BY ACCOUNT_NUMBER;"""
 
     result = cvm_base_query({"sql_query": query})
