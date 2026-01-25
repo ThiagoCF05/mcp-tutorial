@@ -2,7 +2,7 @@ import asyncio
 
 from agents import Agent, ModelSettings, Runner, RunResult
 from datetime import datetime
-from experiments import ExperimentMetadata, StockInput
+from experiments import ExperimentMetadata, Model, Intensity, StockInput
 from openai.types.shared import Reasoning
 from tools import code_interpreter
 from financial_agents import get_agent
@@ -19,14 +19,12 @@ Cotação: {price_str}
 """
 
 
-def init_agent(experiment_metadata: ExperimentMetadata) -> Agent:
-    model_settings = ModelSettings(tool_choice="required")
-    if experiment_metadata.reasoning:
-        reasoning = Reasoning(effort=experiment_metadata.reasoning)
-        model_settings = ModelSettings(
-            reasoning=reasoning,
-            verbosity=experiment_metadata.verbosity,
-        )
+def init_agent() -> Agent:
+    reasoning = Reasoning(effort=Intensity.HIGH)
+    model_settings = ModelSettings(
+        reasoning=reasoning,
+        verbosity=Intensity.MEDIUM,
+    )
 
     return get_agent(
         name="financial_manager",
@@ -35,7 +33,7 @@ def init_agent(experiment_metadata: ExperimentMetadata) -> Agent:
             code_interpreter,
         ],
         servers=[],
-        model=experiment_metadata.model,
+        model=Model.GPT_5_MINI,
         model_settings=model_settings,
         output_type=FinanceOutput,
     )
