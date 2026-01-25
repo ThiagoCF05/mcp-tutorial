@@ -6,12 +6,11 @@ import time
 
 from agents import Agent, ModelSettings, Runner, RunResult
 from experiments import ExperimentMetadata
-from experiments.reinventa.config import PRICE_FILE, STOCKS
+from experiments.final_report2025.config import PRICE_FILE, STOCKS, DB_PATH
 from experiments.utils import save_results
 from openai.types.shared import Reasoning
 from tools import code_interpreter
-from tools.cvm_composition import cvm_composition_query
-from tools.cvm_base import cvm_base_query
+from db.base_query import run_sql_query
 from financial_agents import get_agent
 from financial_agents.financial_analyst import (
     FINANCIAL_ANALYST_INSTRUCTION,
@@ -62,7 +61,7 @@ def get_stock_report(cnpj: str, date: str) -> str:
     WHERE CNPJ = '{cnpj}' AND REPORT_DATE = '{date}' 
     ORDER BY ACCOUNT_NUMBER;"""
 
-    result = cvm_base_query({"sql_query": query})
+    result = run_sql_query({"sql_query": query}, db_path=DB_PATH)
     return result.get("report", "")
 
 
@@ -80,7 +79,7 @@ def get_stock_composition(cnpj: str, date: str) -> str:
     FROM CVM_SHARE_COMPOSITION 
     WHERE CNPJ = '{cnpj}' AND REPORT_DATE = '{date}';"""
 
-    result = cvm_composition_query({"sql_query": query})
+    result = run_sql_query({"sql_query": query}, db_path=DB_PATH)
     return result.get("report", "")
 
 

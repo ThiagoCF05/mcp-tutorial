@@ -25,3 +25,5 @@ STOCKS = [
     StockInput(name="Renova Energia", cnpj="08.534.605/0001-74", stock_id="RNEW11"),
     StockInput(name="Serena Energia", cnpj="42.500.384/0001-51", stock_id="SRNA3"),
 ]
+
+DB_PATH = "/Users/thiagocastroferreira/Desktop/kubernetes/mcp-tutorial/cvm.db"

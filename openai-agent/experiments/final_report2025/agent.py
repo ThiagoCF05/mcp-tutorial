@@ -6,7 +6,7 @@ import time
 
 from agents import Agent, ModelSettings, Runner, RunResult
 from experiments import ExperimentMetadata
-from experiments.reinventa.config import PRICE_FILE, STOCKS
+from experiments.final_report2025.config import PRICE_FILE, STOCKS
 from experiments.utils import save_results
 from openai.types.shared import Reasoning
 from tools import code_interpreter, cvm_composition_query_tool, cvm_base_query_tool
