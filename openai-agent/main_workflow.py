@@ -1,8 +1,11 @@
 import experiments.investment_house.fundamental_analyst as fundamental_analyst
+import experiments.investment_house.manager as financial_manager
 import finbr.dias_uteis as dus
 import json
+import pandas as pd
 import time
 
+from agents import RunResult
 from datetime import datetime, timedelta
 from db import get_stock_daily_info
 from db.base_query import ResponseFormat
@@ -37,7 +40,87 @@ def get_last_stock_report_date(date: datetime) -> datetime:
         return datetime(date.year, 6, 30)
 
 
+def _parse_fundamental_analyst_output(result: RunResult, elapsed_time: float) -> dict:
+    """
+    Return a dictionary containing the fundamental analysis indicators and their values.
+
+    Parameters
+    ----------
+    result : RunResult
+        The result of the financial analysis.
+    elapsed_time : float
+        The elapsed time of the analysis.
+
+    Returns
+    -------
+    dict
+        A dictionary containing the fundamental analysis indicators and their values.
+    """
+    fundamental_analysis = get_result(result, elapsed_time)
+
+    fundamental_indicators = {
+        str(f["indicator"]): f["value"]
+        for f in fundamental_analysis.get("output", {}).get("indicators", [])
+    }
+    return fundamental_indicators
+
+
+def _parse_financial_manager_output(
+    result: RunResult, analysis_date: str, elapsed_time: float
+) -> dict:
+    manager_result = get_result(result, elapsed_time).get("output", {})
+    manager_result["analysis_date"] = analysis_date
+    return manager_result
+
+
+def _get_daily_price_info(stock_id: str, daily_stock_info: dict) -> dict:
+    """
+    Return a dictionary containing the daily price information of a stock.
+
+    Parameters
+    ----------
+    stock_id : str
+        The ID of the stock.
+    daily_stock_info : dict
+        A dictionary containing the daily price information of the stock.
+
+    Returns
+    -------
+    dict
+        A dictionary containing the daily price information of the stock.
+    """
+    price_info = {}
+    price_info["ACAO"] = stock_id
+    price_info["DATA_DO_PREGAO"] = daily_stock_info["DATA_DO_PREGAO"]
+    price_info["PRECO_DE_ABERTURA"] = daily_stock_info["PRECO_DE_ABERTURA"]
+    price_info["PRECO_MINIMO"] = daily_stock_info["PRECO_MINIMO"]
+    price_info["PRECO_MAXIMO"] = daily_stock_info["PRECO_MAXIMO"]
+    price_info["PRECO_ULTIMO_NEGOCIO"] = daily_stock_info["PRECO_ULTIMO_NEGOCIO"]
+    price_info["PRECO_MEDIO"] = daily_stock_info["PRECO_MEDIO"]
+    price_info["PRECO_MELHOR_OFERTA_DE_COMPRA"] = daily_stock_info[
+        "PRECO_MELHOR_OFERTA_DE_COMPRA"
+    ]
+    price_info["QUANTIDADE_NEGOCIADA"] = daily_stock_info["QUANTIDADE_NEGOCIADA"]
+    price_info["VOLUME_TOTAL_NEGOCIADO"] = daily_stock_info["VOLUME_TOTAL_NEGOCIADO"]
+    return price_info
+
+
+def _get_last_manager_decision(decisions: list) -> dict:
+    if len(decisions) == 0:
+        return {
+            "JUSTIFICATIVA_PREVIA": "N/A",
+            "PRECO_ALVO_ANTERIOR": "N/A",
+            "RECOMENDACAO_ANTERIOR": "N/A",
+        }
+    return {
+        "JUSTIFICATIVA_PREVIA": decisions[-1]["justification"],
+        "PRECO_ALVO_ANTERIOR": decisions[-1]["target_price"],
+        "RECOMENDACAO_ANTERIOR": decisions[-1]["recommendation"],
+    }
+
+
 if __name__ == "__main__":
+    manager_decisions = []
     fundamental_analyses = []
 
     experiment = ExperimentMetadata(
@@ -79,44 +162,40 @@ if __name__ == "__main__":
 
                 end_time = time.time()
 
-                fundamental_analysis = get_result(result, end_time - start_time)
-
-                fundamental_indicators = {
-                    str(f["indicator"]): f["value"]
-                    for f in fundamental_analysis.get("output", {}).get(
-                        "indicators", []
-                    )
-                }
-                fundamental_indicators["ACAO"] = stock.stock_id
-                fundamental_indicators["DATA_DO_PREGAO"] = daily_stock_info[0][
-                    "DATA_DO_PREGAO"
-                ]
-                fundamental_indicators["PRECO_DE_ABERTURA"] = daily_stock_info[0][
-                    "PRECO_DE_ABERTURA"
-                ]
-                fundamental_indicators["PRECO_MINIMO"] = daily_stock_info[0][
-                    "PRECO_MINIMO"
-                ]
-                fundamental_indicators["PRECO_MAXIMO"] = daily_stock_info[0][
-                    "PRECO_MAXIMO"
-                ]
-                fundamental_indicators["PRECO_ULTIMO_NEGOCIO"] = daily_stock_info[0][
-                    "PRECO_ULTIMO_NEGOCIO"
-                ]
-                fundamental_indicators["PRECO_MEDIO"] = daily_stock_info[0][
-                    "PRECO_MEDIO"
-                ]
-                fundamental_indicators["PRECO_MELHOR_OFERTA_DE_COMPRA"] = (
-                    daily_stock_info[0]["PRECO_MELHOR_OFERTA_DE_COMPRA"]
+                # Get fundamental indicators
+                fundamental_indicators = _parse_fundamental_analyst_output(
+                    result, end_time - start_time
                 )
-                fundamental_indicators["QUANTIDADE_NEGOCIADA"] = daily_stock_info[0][
-                    "QUANTIDADE_NEGOCIADA"
-                ]
-                fundamental_indicators["VOLUME_TOTAL_NEGOCIADO"] = daily_stock_info[0][
-                    "VOLUME_TOTAL_NEGOCIADO"
-                ]
+                # Get price info
+                price_info = _get_daily_price_info(
+                    stock_id=stock.stock_id, daily_stock_info=daily_stock_info[0]
+                )
+                # Last manager decision
+                last_manager_decision = _get_last_manager_decision(manager_decisions)
 
-                fundamental_analyses.append(fundamental_indicators)
+                fundamental_analyses.append(
+                    {**fundamental_indicators, **price_info, **last_manager_decision}
+                )
+
+                indicators = pd.DataFrame(fundamental_analyses)
+                indicators = indicators[
+                    indicators["ACAO"] == stock.stock_id
+                ].sort_values("DATA_DO_PREGAO")
+
+                decision = financial_manager.run(
+                    stock=stock,
+                    stock_price=daily_stock_price,
+                    date=report_date,
+                    experiment_metadata=experiment,
+                    indicators=indicators.to_string(),
+                )
+
+                end_time = time.time()
+
+                decision = _parse_financial_manager_output(
+                    decision, analysis_date, end_time - start_time
+                )
+                manager_decisions.append(decision)
 
                 with open("results_sample.json", "w") as f:
                     json.dump(fundamental_analyses, f, indent=4)
