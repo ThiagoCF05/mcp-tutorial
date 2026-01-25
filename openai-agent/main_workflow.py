@@ -76,7 +76,9 @@ def _parse_financial_manager_output(
     return manager_result
 
 
-def _get_daily_price_info(stock_id: str, daily_stock_info: dict) -> dict:
+def _get_daily_price_info(
+    stock_id: str, daily_stock_info: dict, report_date: str
+) -> dict:
     """
     Return a dictionary containing the daily price information of a stock.
 
@@ -105,6 +107,7 @@ def _get_daily_price_info(stock_id: str, daily_stock_info: dict) -> dict:
     ]
     price_info["QUANTIDADE_NEGOCIADA"] = daily_stock_info["QUANTIDADE_NEGOCIADA"]
     price_info["VOLUME_TOTAL_NEGOCIADO"] = daily_stock_info["VOLUME_TOTAL_NEGOCIADO"]
+    price_info["DATA_BALANCO_PROCESSADO"] = report_date.strftime("%Y-%m-%d")
     return price_info
 
 
@@ -156,7 +159,7 @@ if __name__ == "__main__":
     )
     for stock in STOCKS:
         for year in [2024, 2025]:
-            for month in range(1, 12):
+            for month in range(1, 13):
                 analysis_date = _get_first_workday(year, month)
                 print(f"Analisando {stock.stock_id} em {analysis_date}")
 
@@ -205,7 +208,9 @@ if __name__ == "__main__":
                 )
                 # Get price info
                 price_info = _get_daily_price_info(
-                    stock_id=stock.stock_id, daily_stock_info=daily_stock_info[0]
+                    stock_id=stock.stock_id,
+                    daily_stock_info=daily_stock_info[0],
+                    report_date=report_date,
                 )
                 # Last manager decision
                 last_manager_decision = _get_last_manager_decision(manager_decisions)
@@ -222,7 +227,7 @@ if __name__ == "__main__":
                 decision = financial_manager.run(
                     stock=stock,
                     stock_price=daily_stock_price,
-                    date=report_date,
+                    date=analysis_date,
                     experiment_metadata=experiment,
                     indicators=indicators.to_string(),
                 )

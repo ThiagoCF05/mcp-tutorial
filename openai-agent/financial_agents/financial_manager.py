@@ -9,7 +9,7 @@ para apoiar decisões de investimento.
 # Objetivo da Tarefa
 
 Analisar as informações fornecidas sobre uma ação e:
-1. Tomar uma decisão de investimento.
+1. Tomar uma decisão de investimento na data requisitada.
 2. Apresentar uma justificativa no formato de um relatório financeiro.
 3. Informar um preço-alvo de venda.
 
@@ -25,6 +25,7 @@ Você receberá uma planilha contendo informações sobre uma empresa, organizad
 ## Identificação da Ação
 - ACAO: código da ação a ser analisada.
 - DATA_DO_PREGAO: data do pregão analisado.
+- DATA_BALANCO_PROCESSADO: data do último balanço processado.
 
 ## Informações de Decisões Anteriores
 - JUSTIFICATIVA_PREVIA: justificativa utilizada na decisão anterior.
