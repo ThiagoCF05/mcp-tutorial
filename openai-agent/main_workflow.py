@@ -1,3 +1,4 @@
+import os
 import experiments.investment_house.fundamental_analyst as fundamental_analyst
 import experiments.investment_house.manager as financial_manager
 import finbr.dias_uteis as dus
@@ -18,6 +19,8 @@ from financial_agents.financial_analyst import (
 from dotenv import load_dotenv
 
 load_dotenv()
+
+WRITE_FOLDER = "/Users/thiagocastroferreira/Desktop/kubernetes/results/manager"
 
 
 def _get_first_workday(year, month):
@@ -69,7 +72,7 @@ def _parse_financial_manager_output(
     result: RunResult, analysis_date: str, elapsed_time: float
 ) -> dict:
     manager_result = get_result(result, elapsed_time).get("output", {})
-    manager_result["analysis_date"] = analysis_date
+    manager_result["analysis_date"] = analysis_date.strftime("%Y-%m-%d")
     return manager_result
 
 
@@ -119,13 +122,32 @@ def _get_last_manager_decision(decisions: list) -> dict:
     }
 
 
+def _save_results(
+    write_folder: str,
+    stock_id: str,
+    analysis_date: str,
+    agent_role: str,
+    result: RunResult,
+    elapsed_time: float,
+    experiment_id: int,
+) -> None:
+    write_folder = f"{write_folder}/{stock_id}"
+    os.makedirs(write_folder, exist_ok=True)
+    agent_result = get_result(result, elapsed_time)
+
+    with open(
+        f"{write_folder}/{analysis_date}_{agent_role}_{experiment_id}.json", "w"
+    ) as f:
+        json.dump(agent_result, f, indent=4)
+
+
 if __name__ == "__main__":
     manager_decisions = []
     fundamental_analyses = []
 
     experiment = ExperimentMetadata(
         model=Model.GPT_5_MINI,
-        write_folder="./",
+        write_folder=WRITE_FOLDER,
         max_turns=30,
         structured_output=IndicatorOutput.model_json_schema(),
         reasoning=Intensity.MEDIUM,
@@ -137,6 +159,11 @@ if __name__ == "__main__":
             for month in range(1, 12):
                 analysis_date = _get_first_workday(year, month)
                 print(f"Analisando {stock.stock_id} em {analysis_date}")
+
+                if os.path.exists(
+                    f"{experiment.write_folder}/{stock.stock_id}/{analysis_date.strftime('%Y-%m-%d')}_analyst_0.json"
+                ):
+                    continue
 
                 start_time = time.time()
 
@@ -161,6 +188,16 @@ if __name__ == "__main__":
                 )
 
                 end_time = time.time()
+
+                _save_results(
+                    write_folder=experiment.write_folder,
+                    stock_id=stock.stock_id,
+                    analysis_date=analysis_date.strftime("%Y-%m-%d"),
+                    agent_role="analyst",
+                    result=result,
+                    elapsed_time=end_time - start_time,
+                    experiment_id=0,
+                )
 
                 # Get fundamental indicators
                 fundamental_indicators = _parse_fundamental_analyst_output(
@@ -192,10 +229,23 @@ if __name__ == "__main__":
 
                 end_time = time.time()
 
+                _save_results(
+                    write_folder=experiment.write_folder,
+                    stock_id=stock.stock_id,
+                    analysis_date=analysis_date.strftime("%Y-%m-%d"),
+                    agent_role="manager",
+                    result=decision,
+                    elapsed_time=end_time - start_time,
+                    experiment_id=0,
+                )
+
                 decision = _parse_financial_manager_output(
                     decision, analysis_date, end_time - start_time
                 )
                 manager_decisions.append(decision)
 
-                with open("results_sample.json", "w") as f:
+                with open(f"{experiment.write_folder}/results_sample.json", "w") as f:
                     json.dump(fundamental_analyses, f, indent=4)
+
+                with open(f"{experiment.write_folder}/decisions_sample.json", "w") as f:
+                    json.dump(manager_decisions, f, indent=4)
