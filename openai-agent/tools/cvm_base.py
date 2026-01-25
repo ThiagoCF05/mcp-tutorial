@@ -61,6 +61,7 @@ def cvm_base_query_tool(inp: QueryInput) -> dict:
         DFP_GROUP TEXT NOT NULL, # Grupo DFP
         VERSION TEXT NOT NULL, # Versão
         CURRENCY TEXT NOT NULL, # Moeda
+        EXERC_ORDER TEXT NOT NULL, # Ordem de Exercício (Penúltimo ou Último)
         ANALYSIS_START_PERIOD_DATE DATETIME, # Data de Início do Período de Análise
         ANALYSIS_END_PERIOD_DATE DATETIME NOT NULL, # Data de Fim do Período de Análise
         ACCOUNT_NUMBER TEXT NOT NULL, # Número da Conta
