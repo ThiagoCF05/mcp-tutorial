@@ -1,51 +1,7 @@
 from agents import function_tool
-from typing_extensions import TypedDict
+from db.base_query import QueryInput, run_sql_query
 
 DB_PATH = "/Users/thiagocastroferreira/Desktop/kubernetes/mcp-tutorial/cvm.db"
-
-
-class QueryInput(TypedDict):
-    sql_query: str
-
-
-def cvm_base_query(inp: QueryInput) -> dict:
-    import sqlite3
-
-    try:
-        sql_query = inp.get("sql_query")
-        with sqlite3.connect(DB_PATH) as conn:
-            cursor = conn.cursor()
-            cursor.execute(sql_query)
-
-            # Fetch column names
-            columns = (
-                [description[0] for description in cursor.description]
-                if cursor.description
-                else []
-            )
-
-            # Fetch results
-            rows = cursor.fetchall()
-
-            # Format results as markdown table
-            if not rows:
-                return "No data found with given query"
-
-            # Create markdown table
-            output = "| " + " | ".join(columns) + " |\n"
-            output += "| " + " | ".join(["---" for _ in columns]) + " |\n"
-            for row in rows:
-                output += (
-                    "| "
-                    + " | ".join(
-                        [str(cell) if cell is not None else "" for cell in row]
-                    )
-                    + " |\n"
-                )
-
-            return {"status": "success", "report": output}
-    except Exception as e:
-        return {"status": "error", "report": f"Failed to get table schema: {e}"}
 
 
 @function_tool
@@ -75,4 +31,4 @@ def cvm_base_query_tool(inp: QueryInput) -> dict:
     - As informações estão disponibilizadas trimestralmente (Março, Junho, Setembro e Dezembro), conforme a data de início do período de análise.
     - Para o balanço anual, consultar análises de Dezembro.
     """
-    return cvm_base_query(inp)
+    return run_sql_query(inp, db_path=DB_PATH)
