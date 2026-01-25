@@ -22,9 +22,9 @@ def get_stock_report(cnpj: str, date: datetime) -> str:
     start_date, end_date = _get_month_range(date)
 
     query = f"""
-    SELECT ACCOUNT_NUMBER, ACCOUNT_NAME, ACCOUNT_VALUE 
+    SELECT ACCOUNT_NUMBER, ACCOUNT_NAME, ACCOUNT_VALUE, VERSION, EXERC_ORDER, ANALYSIS_START_PERIOD_DATE, ANALYSIS_END_PERIOD_DATE
     FROM DFP_ITR_CVM 
-    WHERE CNPJ = '{cnpj}' AND ANALYSIS_END_PERIOD_DATE >= '{start_date}' AND ANALYSIS_END_PERIOD_DATE < '{end_date}' 
+    WHERE CNPJ = '{cnpj}' AND REPORT_DATE >= '{start_date}' AND REPORT_DATE < '{end_date}' 
     ORDER BY ACCOUNT_NUMBER;"""
 
     result = run_sql_query(inp={"sql_query": query}, db_path=CVM_DATABASE_PATH)
