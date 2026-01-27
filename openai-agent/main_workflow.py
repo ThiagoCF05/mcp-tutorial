@@ -10,7 +10,7 @@ from agents import RunResult
 from datetime import datetime, timedelta
 from db import get_stock_daily_info
 from db.base_query import ResponseFormat
-from experiments import ExperimentMetadata, Model
+from experiments import ExperimentMetadata, Model, Intensity
 from experiments.investment_house.config import STOCKS
 from experiments.utils import get_result
 from financial_agents.financial_analyst import (
@@ -151,12 +151,12 @@ if __name__ == "__main__":
     fundamental_analyses = []
 
     experiment = ExperimentMetadata(
-        model=Model.GPT_4_1_MINI,
+        model=Model.GPT_5_MINI,
         write_folder=WRITE_FOLDER,
         max_turns=15,
         structured_output=IndicatorOutput.model_json_schema(),
-        # reasoning=Intensity.MEDIUM,
-        # verbosity=Intensity.MEDIUM,
+        reasoning=Intensity.MEDIUM,
+        verbosity=Intensity.MEDIUM,
         reflection=True,
     )
 
