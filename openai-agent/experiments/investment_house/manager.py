@@ -68,7 +68,7 @@ def run(
     indicators: str,
     experiment_metadata: ExperimentMetadata,
 ):
-    agent = init_agent(experiment_metadata=experiment_metadata)
+    agent = init_agent()
 
     result = analyse(
         agent=agent,

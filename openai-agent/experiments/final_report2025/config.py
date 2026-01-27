@@ -1,6 +1,8 @@
 from experiments import StockInput
 
-PRICE_FILE = "/Users/thiagocastroferreira/Desktop/kubernetes/mcp-tutorial/fundamental_analysis/2025-04-17/fundamental_analysis.csv"
+PRICE_FILE = (
+    "/home/ubuntu/mcp-tutorial/fundamental_analysis/2025-04-17/fundamental_analysis.csv"
+)
 
 STOCKS = [
     StockInput(
@@ -26,4 +28,4 @@ STOCKS = [
     StockInput(name="Serena Energia", cnpj="42.500.384/0001-51", stock_id="SRNA3"),
 ]
 
-DB_PATH = "/Users/thiagocastroferreira/Desktop/kubernetes/mcp-tutorial/cvm.db"
+DB_PATH = "/home/ubuntu/mcp-tutorial/cvm.db"

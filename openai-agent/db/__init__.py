@@ -3,10 +3,8 @@ __author__ = "thiagocastroferreira"
 from db.base_query import run_sql_query, ResponseFormat
 from datetime import datetime, timedelta
 
-PRICE_DATABASE_PATH = (
-    "/Users/thiagocastroferreira/Desktop/kubernetes/mcp-tutorial/prices.db"
-)
-CVM_DATABASE_PATH = "/Users/thiagocastroferreira/Desktop/kubernetes/mcp-tutorial/cvm.db"
+PRICE_DATABASE_PATH = "/home/ubuntu/mcp-tutorial/prices.db"
+CVM_DATABASE_PATH = "/home/ubuntu/mcp-tutorial/cvm.db"
 
 
 def _get_month_range(date: datetime) -> tuple[str, str]:

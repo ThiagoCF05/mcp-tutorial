@@ -10,8 +10,8 @@ from agents import RunResult
 from datetime import datetime, timedelta
 from db import get_stock_daily_info
 from db.base_query import ResponseFormat
-from experiments import ExperimentMetadata, Model, Intensity
-from experiments.reinventa.config import STOCKS
+from experiments import ExperimentMetadata, Model
+from experiments.investment_house.config import STOCKS
 from experiments.utils import get_result
 from financial_agents.financial_analyst import (
     IndicatorOutput,
@@ -20,7 +20,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-WRITE_FOLDER = "/Users/thiagocastroferreira/Desktop/kubernetes/results/manager"
+WRITE_FOLDER = "manager"
 
 
 def _get_first_workday(year, month):
@@ -69,10 +69,11 @@ def _parse_fundamental_analyst_output(result: RunResult, elapsed_time: float) ->
 
 
 def _parse_financial_manager_output(
-    result: RunResult, analysis_date: str, elapsed_time: float
+    result: RunResult, analysis_date: str, elapsed_time: float, stock_id: str
 ) -> dict:
     manager_result = get_result(result, elapsed_time).get("output", {})
     manager_result["analysis_date"] = analysis_date.strftime("%Y-%m-%d")
+    manager_result["stock_id"] = stock_id
     return manager_result
 
 
@@ -111,17 +112,18 @@ def _get_daily_price_info(
     return price_info
 
 
-def _get_last_manager_decision(decisions: list) -> dict:
-    if len(decisions) == 0:
+def _get_last_manager_decision(decisions: list, stock_id: str) -> dict:
+    decisions_ = [d for d in decisions if d["stock_id"] == stock_id]
+    if len(decisions_) == 0:
         return {
             "JUSTIFICATIVA_PREVIA": "N/A",
             "PRECO_ALVO_ANTERIOR": "N/A",
             "RECOMENDACAO_ANTERIOR": "N/A",
         }
     return {
-        "JUSTIFICATIVA_PREVIA": decisions[-1]["justification"],
-        "PRECO_ALVO_ANTERIOR": decisions[-1]["target_price"],
-        "RECOMENDACAO_ANTERIOR": decisions[-1]["recommendation"],
+        "JUSTIFICATIVA_PREVIA": decisions_[-1]["justification"],
+        "PRECO_ALVO_ANTERIOR": decisions_[-1]["target_price"],
+        "RECOMENDACAO_ANTERIOR": decisions_[-1]["recommendation"],
     }
 
 
@@ -149,14 +151,22 @@ if __name__ == "__main__":
     fundamental_analyses = []
 
     experiment = ExperimentMetadata(
-        model=Model.GPT_5_MINI,
+        model=Model.GPT_4_1_MINI,
         write_folder=WRITE_FOLDER,
-        max_turns=30,
+        max_turns=15,
         structured_output=IndicatorOutput.model_json_schema(),
-        reasoning=Intensity.MEDIUM,
-        verbosity=Intensity.MEDIUM,
+        # reasoning=Intensity.MEDIUM,
+        # verbosity=Intensity.MEDIUM,
         reflection=True,
     )
+
+    if os.path.exists(f"{experiment.write_folder}/results_sample.json"):
+        with open(f"{experiment.write_folder}/results_sample.json") as f:
+            fundamental_analyses = json.load(f)
+
+        with open(f"{experiment.write_folder}/decisions_sample.json") as f:
+            manager_decisions = json.load(f)
+
     for stock in STOCKS:
         for year in [2024, 2025]:
             for month in range(1, 13):
@@ -213,16 +223,20 @@ if __name__ == "__main__":
                     report_date=report_date,
                 )
                 # Last manager decision
-                last_manager_decision = _get_last_manager_decision(manager_decisions)
+                last_manager_decision = _get_last_manager_decision(
+                    manager_decisions, stock.stock_id
+                )
 
                 fundamental_analyses.append(
                     {**fundamental_indicators, **price_info, **last_manager_decision}
                 )
 
                 indicators = pd.DataFrame(fundamental_analyses)
-                indicators = indicators[
-                    indicators["ACAO"] == stock.stock_id
-                ].sort_values("DATA_DO_PREGAO")
+                indicators = (
+                    indicators[indicators["ACAO"] == stock.stock_id]
+                    .sort_values("DATA_DO_PREGAO", ascending=True)
+                    .tail(12)
+                )
 
                 decision = financial_manager.run(
                     stock=stock,
@@ -245,7 +259,7 @@ if __name__ == "__main__":
                 )
 
                 decision = _parse_financial_manager_output(
-                    decision, analysis_date, end_time - start_time
+                    decision, analysis_date, end_time - start_time, stock.stock_id
                 )
                 manager_decisions.append(decision)
 

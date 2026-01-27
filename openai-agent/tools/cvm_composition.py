@@ -1,7 +1,7 @@
 from agents import function_tool
 from db.base_query import QueryInput, run_sql_query
 
-DB_PATH = "/Users/thiagocastroferreira/Desktop/kubernetes/mcp-tutorial/cvm.db"
+DB_PATH = "/home/ubuntu/mcp-tutorial/cvm.db"
 
 
 @function_tool
