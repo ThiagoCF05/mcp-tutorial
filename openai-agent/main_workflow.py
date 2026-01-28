@@ -167,104 +167,127 @@ if __name__ == "__main__":
         with open(f"{experiment.write_folder}/decisions_sample.json") as f:
             manager_decisions = json.load(f)
 
-    for stock in STOCKS:
-        for year in [2024, 2025]:
-            for month in range(1, 13):
-                analysis_date = _get_first_workday(year, month)
-                print(f"Analisando {stock.stock_id} em {analysis_date}")
+    while True:
+        is_error = False
+        try:
+            for stock in STOCKS:
+                for year in [2024, 2025]:
+                    for month in range(1, 13):
+                        analysis_date = _get_first_workday(year, month)
+                        print(f"Analisando {stock.stock_id} em {analysis_date}")
 
-                if os.path.exists(
-                    f"{experiment.write_folder}/{stock.stock_id}/{analysis_date.strftime('%Y-%m-%d')}_analyst_0.json"
-                ):
-                    continue
+                        if os.path.exists(
+                            f"{experiment.write_folder}/{stock.stock_id}/{analysis_date.strftime('%Y-%m-%d')}_analyst_0.json"
+                        ):
+                            continue
 
-                start_time = time.time()
+                        start_time = time.time()
 
-                # Get stock price in the day
-                daily_stock_info = get_stock_daily_info(
-                    stock_id=stock.stock_id,
-                    date=analysis_date,
-                    response_format=ResponseFormat.DICT,
-                )
-                if len(daily_stock_info) == 0:
-                    continue
-                daily_stock_price = float(daily_stock_info[0]["PRECO_ULTIMO_NEGOCIO"])
+                        # Get stock price in the day
+                        daily_stock_info = get_stock_daily_info(
+                            stock_id=stock.stock_id,
+                            date=analysis_date,
+                            response_format=ResponseFormat.DICT,
+                        )
+                        if len(daily_stock_info) == 0:
+                            continue
+                        daily_stock_price = float(
+                            daily_stock_info[0]["PRECO_ULTIMO_NEGOCIO"]
+                        )
 
-                # Get last quarter reports date (previous 3 months)
-                report_date = get_last_stock_report_date(analysis_date)
+                        # Get last quarter reports date (previous 3 months)
+                        report_date = get_last_stock_report_date(analysis_date)
 
-                result = fundamental_analyst.run(
-                    stock=stock,
-                    stock_price=daily_stock_price,
-                    date=report_date,
-                    experiment_metadata=experiment,
-                )
+                        result = fundamental_analyst.run(
+                            stock=stock,
+                            stock_price=daily_stock_price,
+                            date=report_date,
+                            experiment_metadata=experiment,
+                        )
 
-                end_time = time.time()
+                        end_time = time.time()
 
-                _save_results(
-                    write_folder=experiment.write_folder,
-                    stock_id=stock.stock_id,
-                    analysis_date=analysis_date.strftime("%Y-%m-%d"),
-                    agent_role="analyst",
-                    result=result,
-                    elapsed_time=end_time - start_time,
-                    experiment_id=0,
-                )
+                        _save_results(
+                            write_folder=experiment.write_folder,
+                            stock_id=stock.stock_id,
+                            analysis_date=analysis_date.strftime("%Y-%m-%d"),
+                            agent_role="analyst",
+                            result=result,
+                            elapsed_time=end_time - start_time,
+                            experiment_id=0,
+                        )
 
-                # Get fundamental indicators
-                fundamental_indicators = _parse_fundamental_analyst_output(
-                    result, end_time - start_time
-                )
-                # Get price info
-                price_info = _get_daily_price_info(
-                    stock_id=stock.stock_id,
-                    daily_stock_info=daily_stock_info[0],
-                    report_date=report_date,
-                )
-                # Last manager decision
-                last_manager_decision = _get_last_manager_decision(
-                    manager_decisions, stock.stock_id
-                )
+                        # Get fundamental indicators
+                        fundamental_indicators = _parse_fundamental_analyst_output(
+                            result, end_time - start_time
+                        )
+                        # Get price info
+                        price_info = _get_daily_price_info(
+                            stock_id=stock.stock_id,
+                            daily_stock_info=daily_stock_info[0],
+                            report_date=report_date,
+                        )
+                        # Last manager decision
+                        last_manager_decision = _get_last_manager_decision(
+                            manager_decisions, stock.stock_id
+                        )
 
-                fundamental_analyses.append(
-                    {**fundamental_indicators, **price_info, **last_manager_decision}
-                )
+                        fundamental_analyses.append(
+                            {
+                                **fundamental_indicators,
+                                **price_info,
+                                **last_manager_decision,
+                            }
+                        )
 
-                indicators = pd.DataFrame(fundamental_analyses)
-                indicators = (
-                    indicators[indicators["ACAO"] == stock.stock_id]
-                    .sort_values("DATA_DO_PREGAO", ascending=True)
-                    .tail(12)
-                )
+                        indicators = pd.DataFrame(fundamental_analyses)
+                        indicators = (
+                            indicators[indicators["ACAO"] == stock.stock_id]
+                            .sort_values("DATA_DO_PREGAO", ascending=True)
+                            .tail(12)
+                        )
 
-                decision = financial_manager.run(
-                    stock=stock,
-                    stock_price=daily_stock_price,
-                    date=analysis_date,
-                    experiment_metadata=experiment,
-                    indicators=indicators.to_string(),
-                )
+                        decision = financial_manager.run(
+                            stock=stock,
+                            stock_price=daily_stock_price,
+                            date=analysis_date,
+                            experiment_metadata=experiment,
+                            indicators=indicators.to_string(),
+                        )
 
-                end_time = time.time()
+                        end_time = time.time()
 
-                _save_results(
-                    write_folder=experiment.write_folder,
-                    stock_id=stock.stock_id,
-                    analysis_date=analysis_date.strftime("%Y-%m-%d"),
-                    agent_role="manager",
-                    result=decision,
-                    elapsed_time=end_time - start_time,
-                    experiment_id=0,
-                )
+                        _save_results(
+                            write_folder=experiment.write_folder,
+                            stock_id=stock.stock_id,
+                            analysis_date=analysis_date.strftime("%Y-%m-%d"),
+                            agent_role="manager",
+                            result=decision,
+                            elapsed_time=end_time - start_time,
+                            experiment_id=0,
+                        )
 
-                decision = _parse_financial_manager_output(
-                    decision, analysis_date, end_time - start_time, stock.stock_id
-                )
-                manager_decisions.append(decision)
+                        decision = _parse_financial_manager_output(
+                            decision,
+                            analysis_date,
+                            end_time - start_time,
+                            stock.stock_id,
+                        )
+                        manager_decisions.append(decision)
 
-                with open(f"{experiment.write_folder}/results_sample.json", "w") as f:
-                    json.dump(fundamental_analyses, f, indent=4)
+                        with open(
+                            f"{experiment.write_folder}/results_sample.json", "w"
+                        ) as f:
+                            json.dump(fundamental_analyses, f, indent=4)
 
-                with open(f"{experiment.write_folder}/decisions_sample.json", "w") as f:
-                    json.dump(manager_decisions, f, indent=4)
+                        with open(
+                            f"{experiment.write_folder}/decisions_sample.json", "w"
+                        ) as f:
+                            json.dump(manager_decisions, f, indent=4)
+        except Exception:
+            print("Error, retrying in 1 minute...")
+            time.sleep(60)
+            is_error = True
+
+        if not is_error:
+            break
