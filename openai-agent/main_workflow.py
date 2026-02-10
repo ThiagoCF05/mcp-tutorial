@@ -157,7 +157,7 @@ if __name__ == "__main__":
         structured_output=IndicatorOutput.model_json_schema(),
         reasoning=Intensity.MEDIUM,
         verbosity=Intensity.MEDIUM,
-        reflection=True,
+        reflection=False,
     )
 
     if os.path.exists(f"{experiment.write_folder}/results_sample.json"):
